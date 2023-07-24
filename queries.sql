@@ -32,3 +32,15 @@ GROUP BY
     a.AuthorLastName
 ORDER BY COUNT(a.AuthorID) DESC
 LIMIT 5;
+
+
+SELECT a.AuthorNationality
+FROM Author a 
+INNER JOIN Book bk
+    ON a.AuthorID = bk.AuthorID
+INNER JOIN Borrower b
+    ON bk.BookID = b.BookID
+WHERE b.BorrowDate BETWEEN '2015-01-01' AND '2017-12-31'
+GROUP BY  a.AuthorNationality
+ORDER BY COUNT(a.AuthorID) ASC
+LIMIT 5;
