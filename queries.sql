@@ -146,3 +146,12 @@ FROM Client c
 WHERE year(curdate()) - ClientDOB = @MaxAge
 ;
 
+SELECT 
+    AuthorFirstName,
+    AuthorLastName
+FROM Author a
+WHERE (
+    SELECT COUNT(DISTINCT Genre) 
+    FROM Book bk
+    WHERE bk.AuthorID = a.AuthorID 
+) > 1;

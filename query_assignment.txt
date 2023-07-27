@@ -1010,5 +1010,17 @@ WHERE year(curdate()) - ClientDOB = @MaxAge
 
 --14)
 
+SELECT 
+    AuthorFirstName,
+    AuthorLastName
+FROM Author a
+WHERE (
+    SELECT COUNT(DISTINCT Genre) 
+    FROM Book bk
+    WHERE bk.AuthorID = a.AuthorID 
+) > 1;
+
+Empty set (0.00 sec)
+
 
 
