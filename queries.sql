@@ -146,12 +146,11 @@ FROM Client c
 WHERE year(curdate()) - ClientDOB = @MaxAge
 ;
 
-SELECT 
-    AuthorFirstName,
-    AuthorLastName
+SELECT AuthorFirstName, AuthorLastName
 FROM Author a
-WHERE (
-    SELECT COUNT(DISTINCT Genre) 
-    FROM Book bk
-    WHERE bk.AuthorID = a.AuthorID 
-) > 1;
+INNER JOIN (
+    SELECT COUNT(DISTINCT Genre) as GenreCount, AuthorID
+    FROM Book
+    GROUP BY Genre, AuthorID
+) b ON b.AuthorID = a.AuthorID
+WHERE b.GenreCount > 1;
