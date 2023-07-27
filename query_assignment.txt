@@ -754,3 +754,261 @@ LIMIT 5;
 
 --6)
 
+SELECT bk.BookTitle
+FROM Book bk
+INNER JOIN Borrower b
+    ON bk.BookID = b.BookID
+WHERE b.BorrowDate BETWEEN '2015-01-01' AND '2017-12-31'
+GROUP BY bk.BookTitle
+ORDER BY COUNT(bk.BookTitle) DESC
+LIMIT 1;
+
++-------------------+
+| BookTitle         |
++-------------------+
+| The perfect match |
++-------------------+
+1 row in set (0.00 sec)
+
+--7)
+
+SELECT bk.Genre
+FROM Book bk
+INNER JOIN Borrower b
+    ON bk.BookID = b.BookID
+INNER JOIN Client c
+    ON c.ClientID = b.ClientID
+WHERE c.ClientDOB BETWEEN 1970 AND 1980
+GROUP BY bk.Genre
+ORDER BY COUNT(bk.Genre) DESC;
+
++------------+
+| Genre      |
++------------+
+| Science    |
+| Fiction    |
+| Well being |
+| Humor      |
+| Society    |
+| History    |
+| Law        |
+| Children   |
+| Literature |
++------------+
+9 rows in set (0.00 sec)
+
+--8)
+
+SELECT c.Occupation
+FROM Client c 
+INNER JOIN Borrower b 
+    ON c.ClientID = b.ClientID
+INNER JOIN Book bk
+    ON b.BookID = bk.BookID
+WHERE b.BorrowDate BETWEEN '2016-01-1' AND '2016-12-31'
+GROUP BY c.Occupation
+ORDER BY COUNT(c.Occupation) DESC
+LIMIT 5;
+
++---------------------+
+| Occupation          |
++---------------------+
+| Student             |
+| Bus Driver          |
+| Dentist             |
+| Computer Programmer |
+| Police Officer      |
++---------------------+
+5 rows in set (0.05 sec)
+
+--9)
+
+SELECT 
+    c.Occupation,
+    AVG(bo.BorrowCount) AS AverageBorrows
+FROM Client c
+INNER JOIN (
+    SELECT ClientID, COUNT(*) BorrowCount
+    FROM Borrower
+    GROUP BY ClientID 
+) bo 
+    ON bo.ClientID = c.ClientID 
+GROUP BY c.Occupation;
+
++----------------------------+----------------+
+| Occupation                 | AverageBorrows |
++----------------------------+----------------+
+| Student                    |         4.4211 |
+| Firefighter                |         3.2500 |
+| School Psychologist        |         2.0000 |
+| Professor                  |         3.5000 |
+| Securities Clerk           |         2.0000 |
+| Violinist                  |         4.0000 |
+| Licensed Massage Therapist |         2.0000 |
+| Parquet Floor Layer        |         2.0000 |
+| Computer Security Manager  |         6.0000 |
+| Oil Exploration Engineer   |         5.0000 |
+| Aircraft Electrician       |         2.0000 |
+| Manufacturing Director     |         5.0000 |
+| Window Washer              |         2.0000 |
+| Repair Worker              |         3.0000 |
+| Police Officer             |         4.5000 |
+| Payroll Clerk              |         3.0000 |
+| Dentist                    |         5.6667 |
+| Nurse                      |         7.0000 |
+| Insurance Agent            |         4.0000 |
+| Bus Driver                 |         4.0000 |
+| Health Educator            |         2.0000 |
+| Ship Engineer              |         4.0000 |
+| Computer Engineer          |         3.0000 |
+| Food Scientist             |         5.0000 |
+| Computer Programmer        |         5.6667 |
+| School Teacher             |         3.6000 |
+| Doctor                     |         4.0000 |
+| Security Agent             |         2.0000 |
+| Manager                    |         3.0000 |
+| HR Clerk                   |         4.0000 |
+| Systems Analyst            |         4.0000 |
+| Cashier                    |         5.0000 |
++----------------------------+----------------+
+32 rows in set (0.00 sec)
+
+--10)
+
+CREATE OR REPLACE VIEW DisplayTitlesView AS 
+SELECT BookTitle 
+FROM Book bk 
+INNER JOIN Borrower b
+    ON b.BookID = bk.BookID 
+GROUP BY bk.BookTitle
+HAVING COUNT(bk.BookTitle) >= (
+    SELECT COUNT(*) / 5
+    FROM Client
+);
+
+SELECT * FROM DisplayTitlesView;
+
++-------------------------+
+| BookTitle               |
++-------------------------+
+| Electrical transformers |
++-------------------------+
+1 row in set (0.01 sec)
+
+--11)
+
+SELECT MONTHNAME(BorrowDate) AS TopMonth
+FROM Borrower
+WHERE BorrowDate BETWEEN '2017-01-01' AND '2017-12-31'
+GROUP BY 
+    MONTHNAME(BorrowDate), 
+    MONTH(BorrowDate)
+ORDER BY 
+    COUNT(*) DESC,
+    MONTH(BorrowDate) DESC
+LIMIT 1;
+
++----------+
+| TopMonth |
++----------+
+| October  |
++----------+
+1 row in set (0.01 sec)
+
+--12)
+
+SELECT 
+    year(curdate()) - ClientDOB AS Age,
+    AVG(bo.BorrowCount) AS AverageBorrows
+FROM Client c
+INNER JOIN (
+    SELECT ClientID, COUNT(*) BorrowCount
+    FROM Borrower
+    GROUP BY ClientID 
+) bo 
+    ON bo.ClientID = c.ClientID 
+GROUP BY year(curdate()) - ClientDOB
+ORDER BY year(curdate()) - ClientDOB;
+
++------+----------------+
+| Age  | AverageBorrows |
++------+----------------+
+|   13 |         2.3333 |
+|   15 |         6.0000 |
+|   16 |         5.0000 |
+|   17 |         5.5000 |
+|   18 |         4.5000 |
+|   19 |         3.0000 |
+|   20 |         5.0000 |
+|   21 |         2.0000 |
+|   22 |         4.5000 |
+|   24 |         3.6667 |
+|   25 |         2.0000 |
+|   27 |         2.0000 |
+|   28 |         4.5000 |
+|   29 |        10.0000 |
+|   31 |         3.0000 |
+|   33 |         5.5000 |
+|   36 |         2.0000 |
+|   37 |         3.0000 |
+|   38 |         4.0000 |
+|   39 |         5.5000 |
+|   40 |         3.7500 |
+|   41 |         3.0000 |
+|   42 |         2.0000 |
+|   43 |         1.0000 |
+|   44 |         4.3333 |
+|   45 |         5.5000 |
+|   46 |         3.0000 |
+|   47 |         3.5000 |
+|   48 |         2.6667 |
+|   49 |         3.2500 |
+|   50 |         3.6667 |
+|   53 |         4.5000 |
+|   55 |         4.0000 |
+|   56 |         3.0000 |
+|   57 |         1.0000 |
+|   60 |         5.0000 |
+|   61 |         3.0000 |
+|   63 |         3.6667 |
++------+----------------+
+38 rows in set (0.00 sec)
+
+--13)
+
+
+SET @MaxAge := (
+    SELECT MAX(year(curdate()) - ClientDOB)
+    FROM Client
+);
+
+SET @MinAge := (
+    SELECT MIN(year(curdate()) - ClientDOB)
+    FROM Client
+);
+
+SELECT c.*, year(curdate()) - ClientDOB AS Age
+FROM Client c 
+WHERE year(curdate()) - ClientDOB = @MinAge 
+UNION 
+SELECT c.*, year(curdate()) - ClientDOB AS Age
+FROM Client c
+WHERE year(curdate()) - ClientDOB = @MaxAge
+;
+
++----------+-----------------+----------------+-----------+---------------------+------+
+| ClientID | ClientFirstName | ClientLastName | ClientDOB | Occupation          | Age  |
++----------+-----------------+----------------+-----------+---------------------+------+
+|        2 | Alina           | Morton         |      2010 | Student             |   13 |
+|       22 | Alina           | Austin         |      2010 | Student             |   13 |
+|       65 | Joan            | Grant          |      2010 | Student             |   13 |
+|       12 | Mya             | Austin         |      1960 | Parquet Floor Layer |   63 |
+|       38 | Caroline        | Clark          |      1960 | Dentist             |   63 |
+|       72 | Annabel         | Williamson     |      1960 | Cashier             |   63 |
++----------+-----------------+----------------+-----------+---------------------+------+
+6 rows in set (0.01 sec)
+
+--14)
+
+
+
