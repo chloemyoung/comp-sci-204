@@ -37,6 +37,10 @@ CREATE TABLE Borrower (
     FOREIGN KEY (BookID) REFERENCES Book(BookID)
 );              
 
+CREATE INDEX ClientName ON Client (ClientFirstName, ClientLastName)
+
+CREATE INDEX ClientDualID on Client (ClientLastName, ClientID)
+
 --inserting data into the tables 
 
 USE library;
@@ -492,7 +496,7 @@ VALUES
     (49,	23,	'2016-10-25');
 
 
--- 1) 
+-- 1) display all on the client table 
 
 SELECT * from Client;
 +----------+-----------------+----------------+-----------+----------------------------+
@@ -581,7 +585,8 @@ SELECT * from Client;
 +----------+-----------------+----------------+-----------+----------------------------+
 80 rows in set (0.00 sec)
 
--- 2) 
+-- 2) from the client table select the first, last, and occupation
+      using the year(curdate()) to get the client age to show
 
 SELECT 
     ClientFirstName, 
@@ -676,7 +681,9 @@ FROM Client;
 +-----------------+----------------+------+----------------------------+
 80 rows in set (0.01 sec)
 
--- 3)
+-- 3) using an inner join to pull from both the client and the borrower table, 
+      I gave the tables an alias to keep the query direct. The table only shows
+      the client first/last name of books borrowed in march 2018.
 
 SELECT 
     c.ClientFirstName,
@@ -700,7 +707,10 @@ WHERE b.BorrowDate BETWEEN '2018-03-01' AND '2018-03-31';
 +-----------------+----------------+
 8 rows in set (0.00 sec)
 
---4)
+--4) in this table I had to inner join several tables in order to look at 
+     the authors that were borrowed by clients. I also had to create a condition 
+     of dates as well as group the data in a way that it only showed the top 
+     5 authors.
 
 SELECT
     a.AuthorFirstName,
@@ -728,7 +738,8 @@ LIMIT 5;
 +-----------------+----------------+
 5 rows in set (0.00 sec)
 
---5)
+--5)an inner join was written to include the author/book/borrower table. A condition for the
+    date between 2015-2017 was used. The limit of the top 5 authors were grouped by their nationality.
 
 SELECT a.AuthorNationality
 FROM Author a 
@@ -752,7 +763,8 @@ LIMIT 5;
 +-------------------+
 5 rows in set (0.00 sec)
 
---6)
+--6) The book and borrower table was used for this one. A condition for the dates borrowed was used.
+    Limiting the outcome to 1 gives us the top book title borrowed.
 
 SELECT bk.BookTitle
 FROM Book bk
@@ -770,7 +782,9 @@ LIMIT 1;
 +-------------------+
 1 row in set (0.00 sec)
 
---7)
+--7) an inner join was created between the book/borrower/client table and a condition was written
+    in order to only show the clients born in the years 1970-1980. The data was grouped by genre 
+    and ordered by desc count. 
 
 SELECT bk.Genre
 FROM Book bk
@@ -797,7 +811,9 @@ ORDER BY COUNT(bk.Genre) DESC;
 +------------+
 9 rows in set (0.00 sec)
 
---8)
+--8) in this query I needed to utilize the client/book/borrower tables. I additionally set a condition
+     that looks only at the borrow dates in 2016. I set the limit to 5 and asked for descending order in 
+     order to get the top 5.
 
 SELECT c.Occupation
 FROM Client c 
@@ -821,7 +837,8 @@ LIMIT 5;
 +---------------------+
 5 rows in set (0.05 sec)
 
---9)
+--9) in order to get the average I used the AVG function. Using all of the data in client,
+     I grouped by the clientid and occupation.
 
 SELECT 
     c.Occupation,
@@ -873,7 +890,8 @@ GROUP BY c.Occupation;
 +----------------------------+----------------+
 32 rows in set (0.00 sec)
 
---10)
+--10) in order to gain the results for this query I created a view and within the count I divided all of the client 
+      data by 5 in order to get the 20%.
 
 CREATE OR REPLACE VIEW DisplayTitlesView AS 
 SELECT BookTitle 
@@ -895,7 +913,9 @@ SELECT * FROM DisplayTitlesView;
 +-------------------------+
 1 row in set (0.01 sec)
 
---11)
+--11) to gain the top month I created the borrowdat condition but had to add in a month name so that the query
+      correctly labelled the infomation output. Involving all data and limiting it to 1 in descending order gave me 
+      the top month as October.
 
 SELECT MONTHNAME(BorrowDate) AS TopMonth
 FROM Borrower
@@ -915,7 +935,8 @@ LIMIT 1;
 +----------+
 1 row in set (0.01 sec)
 
---12)
+--12) in order to get the proper data back I created a subquery. Averaging out all of the data in the query 
+      I grouped the initial query by the client date of birth in relation to the current date.
 
 SELECT 
     year(curdate()) - ClientDOB AS Age,
@@ -974,8 +995,8 @@ ORDER BY year(curdate()) - ClientDOB;
 +------+----------------+
 38 rows in set (0.00 sec)
 
---13)
-
+--13) to begin I set a maxage and a minage seperate from my query. Once those were set I got the client age by putting the DOB up against
+      the current date and did a union for both the max and the min. This gave me a list of the few clients that were the youngest and oldest.
 
 SET @MaxAge := (
     SELECT MAX(year(curdate()) - ClientDOB)
@@ -1008,7 +1029,8 @@ WHERE year(curdate()) - ClientDOB = @MaxAge
 +----------+-----------------+----------------+-----------+---------------------+------+
 6 rows in set (0.01 sec)
 
---14)
+--14) for this query I was able to use the distinct function in order to identify each genre that the author 
+      has written in. I also created the condition where the distinct genre count had to be > 1.
 
 SELECT AuthorFirstName, AuthorLastName
 FROM Author a
